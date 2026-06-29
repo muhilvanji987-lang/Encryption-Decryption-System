@@ -49,4 +49,13 @@ Anna University - 2026
 - Library: javax.crypto (Java built-in)
 
 ## Project Status
-Completed - Final Year Project 2026
+## Connect With Us
+- GitHub: https://github.com/muhilvanji987-lang
+- LinkedIn: https://www.linkedin.com/in/vanji-muthu-77b138381
+- Email: muhilvanji987@gmail.com
+
+## Screenshots
+Coming soon - GUI screenshots will be added here
+
+## License
+This project is open source and available for educational purposes

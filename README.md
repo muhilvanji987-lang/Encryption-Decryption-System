@@ -68,14 +68,9 @@ This project is open source and available for educational purposes
 - Email: muhilvanji987@gmail.com
 
 ### S. Udhaiappan
-- LinkedIn: (paste Udhaiappan LinkedIn link here)
-- Email: (paste Udhaiappan email here)
-
 ### D. Sathiyan
-- LinkedIn: (paste Sathiyan LinkedIn link here)
-- Email: (paste Sathiyan email here)
 
 ## Project Links
 - Repository: https://github.com/muhilvanji987-lang/Encryption-Decryption-System
-- PPT: (paste your Google Drive PPT link here)
-- Demo Video: (paste YouTube link here if you have)
+- PPT: - PPT: [Encryption_Project_Professional_PPT.pptx](Encryption_Project_Professional_PPT.pptx)
+

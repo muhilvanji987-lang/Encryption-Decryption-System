@@ -55,7 +55,17 @@ Anna University - 2026
 - Email: muhilvanji987@gmail.com
 
 ## Screenshots
-Coming soon - GUI screenshots will be added here
+### Text Encryption
+![Text Encryption](screenshot1.png)
+
+### Text Decryption
+![Text Decryption](screenshot2.png)
+
+### File Encryption
+![File Encryption](screenshot3.png)
+
+### Image Encryption
+![Image Encryption](screenshot4.png)
 
 ## License
 This project is open source and available for educational purposes

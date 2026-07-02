@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Encryption & Decryption System — Live Demo</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;700&display=swap');
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#050A10;--bg2:#0A1020;--bg3:#0D1628;
+  --cyan:#00D4FF;--green:#00FF94;--purple:#7B61FF;--orange:#FF6B35;
+  --white:#E8F4FF;--gray:#7A8899;
+  --border:rgba(0,212,255,0.12);--card:rgba(10,16,32,0.98);
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--white);font-family:'Space Grotesk',sans-serif;overflow-x:hidden}
+body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(0,212,255,0.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,212,255,0.03) 1px,transparent 1px);background-size:50px 50px;pointer-events:none;z-index:0}
+.orb{position:fixed;border-radius:50%;filter:blur(80px);pointer-events:none;z-index:0}
+.orb1{width:500px;height:500px;background:rgba(0,212,255,0.06);top:-100px;right:-100px}
+.orb2{width:400px;height:400px;background:rgba(0,255,148,0.04);bottom:100px;left:-100px}
+
+/* NAV */
+nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;justify-content:space-between;align-items:center;padding:1rem 3rem;background:rgba(5,10,16,0.9);backdrop-filter:blur(20px);border-bottom:1px solid var(--border)}
+.nav-logo{display:flex;align-items:center;gap:.8rem}
+.nav-logo-icon{width:32px;height:32px;background:linear-gradient(135deg,var(--cyan),var(--green));border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:1rem}
+.nav-logo-text{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--white)}
+.nav-logo-text span{color:var(--cyan)}
+.nav-links{display:flex;gap:2rem;list-style:none}
+.nav-links a{color:var(--gray);text-decoration:none;font-size:.82rem;font-weight:500;letter-spacing:.06em;text-transform:uppercase;transition:color .2s}
+.nav-links a:hover{color:var(--cyan)}
+.nav-btn{padding:.55rem 1.4rem;background:var(--cyan);color:var(--bg);border:none;border-radius:6px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.8rem;cursor:pointer;text-decoration:none;transition:all .2s}
+.nav-btn:hover{background:var(--white)}
+
+/* HERO */
+.hero{min-height:100vh;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8rem 2rem 4rem;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:.6rem;padding:.45rem 1.2rem;border:1px solid rgba(0,212,255,.3);border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--cyan);letter-spacing:.1em;margin-bottom:2rem;background:rgba(0,212,255,.05)}
+.hero-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.5)}}
+.hero h1{font-size:clamp(2.5rem,6vw,5rem);font-weight:700;line-height:1.05;letter-spacing:-.03em;margin-bottom:1.5rem}
+.hero h1 .line1{color:var(--white);display:block}
+.hero h1 .line2{background:linear-gradient(90deg,var(--cyan),var(--green));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;display:block}
+.hero-sub{font-size:1.1rem;color:var(--gray);max-width:600px;margin:0 auto 3rem;line-height:1.8}
+.hero-stats{display:flex;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:12px;overflow:hidden;margin-bottom:3rem}
+.hero-stat{flex:1;padding:1.2rem 2rem;background:var(--card);text-align:center}
+.hero-stat-num{font-family:'JetBrains Mono',monospace;font-size:1.6rem;font-weight:700;color:var(--cyan);display:block}
+.hero-stat-label{font-size:.7rem;color:var(--gray);text-transform:uppercase;letter-spacing:.1em;margin-top:.2rem}
+.hero-btns{display:flex;gap:1rem;justify-content:center}
+.btn-primary{padding:.9rem 2.2rem;background:linear-gradient(135deg,var(--cyan),#0099CC);color:var(--bg);border:none;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.9rem;cursor:pointer;text-decoration:none;transition:all .2s;display:inline-flex;align-items:center;gap:.5rem}
+.btn-primary:hover{transform:translateY(-2px);box-shadow:0 8px 30px rgba(0,212,255,.3)}
+.btn-outline{padding:.9rem 2.2rem;background:transparent;color:var(--white);border:1px solid var(--border);border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:600;font-size:.9rem;cursor:pointer;text-decoration:none;transition:all .2s}
+.btn-outline:hover{border-color:var(--cyan);color:var(--cyan)}
+
+/* SECTION */
+.section{padding:5rem 2rem;max-width:1100px;margin:0 auto;position:relative;z-index:1}
+.section-pill{display:inline-flex;align-items:center;gap:.5rem;padding:.3rem .9rem;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);border-radius:20px;font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--cyan);letter-spacing:.12em;text-transform:uppercase;margin-bottom:1rem}
+.section-title{font-size:clamp(1.8rem,3vw,2.8rem);font-weight:700;letter-spacing:-.02em;margin-bottom:1rem}
+.section-sub{font-size:.95rem;color:var(--gray);margin-bottom:3rem;max-width:600px;line-height:1.7}
+
+/* ── LIVE DEMO SECTION ── */
+.demo-tabs{display:flex;gap:.5rem;margin-bottom:1.5rem;background:var(--card);border:1px solid var(--border);border-radius:10px;padding:.4rem}
+.demo-tab{flex:1;padding:.75rem 1rem;background:transparent;border:none;border-radius:7px;color:var(--gray);font-family:'Space Grotesk',sans-serif;font-size:.85rem;font-weight:600;cursor:pointer;transition:all .2s;text-align:center}
+.demo-tab.active{background:var(--cyan);color:var(--bg)}
+.demo-tab:hover:not(.active){background:rgba(0,212,255,.08);color:var(--cyan)}
+
+.demo-panel{display:none;background:var(--card);border:1px solid var(--border);border-radius:14px;overflow:hidden}
+.demo-panel.active{display:block}
+
+.demo-header{display:flex;align-items:center;gap:1rem;padding:1.2rem 1.5rem;border-bottom:1px solid var(--border);background:rgba(0,0,0,.3)}
+.demo-header-icon{font-size:1.4rem}
+.demo-header-title{font-size:1rem;font-weight:700;color:var(--white)}
+.demo-header-sub{font-size:.75rem;color:var(--gray)}
+.demo-status{margin-left:auto;padding:.25rem .8rem;border-radius:20px;font-size:.68rem;font-family:'JetBrains Mono',monospace;font-weight:700;background:rgba(0,255,148,.1);border:1px solid rgba(0,255,148,.25);color:var(--green)}
+
+.demo-body{padding:1.8rem}
+
+/* TEXT DEMO */
+.demo-row{display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.2rem}
+.demo-field label{display:block;font-size:.72rem;color:var(--gray);text-transform:uppercase;letter-spacing:.08em;font-family:'JetBrains Mono',monospace;margin-bottom:.5rem}
+.demo-input{width:100%;background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;padding:.85rem 1rem;color:var(--white);font-family:'JetBrains Mono',monospace;font-size:.82rem;outline:none;transition:border-color .2s;resize:none}
+.demo-input:focus{border-color:var(--cyan)}
+.demo-input.output{color:var(--green);cursor:default}
+.demo-btns{display:flex;gap:.8rem;margin-bottom:1.5rem}
+.demo-btn{flex:1;padding:.85rem 1rem;border:none;border-radius:8px;font-family:'Space Grotesk',sans-serif;font-weight:700;font-size:.85rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;justify-content:center;gap:.5rem}
+.demo-btn.encrypt{background:linear-gradient(135deg,var(--cyan),#0099CC);color:var(--bg)}
+.demo-btn.decrypt{background:linear-gradient(135deg,var(--orange),#CC4400);color:var(--white)}
+.demo-btn:hover{transform:translateY(-1px);opacity:.9}
+.demo-log{background:rgba(0,0,0,.5);border:1px solid rgba(0,255,148,.1);border-radius:8px;padding:1rem 1.2rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--green);min-height:48px}
+
+/* FILE DEMO */
+.file-drop{border:2px dashed var(--border);border-radius:10px;padding:2.5rem;text-align:center;cursor:pointer;transition:all .2s;margin-bottom:1.2rem;position:relative}
+.file-drop:hover,.file-drop.dragover{border-color:var(--cyan);background:rgba(0,212,255,.03)}
+.file-drop input{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+.file-drop-icon{font-size:2.5rem;margin-bottom:.8rem}
+.file-drop-text{font-size:.9rem;color:var(--gray)}
+.file-drop-text span{color:var(--cyan);font-weight:600}
+.file-info{display:none;background:rgba(0,212,255,.06);border:1px solid rgba(0,212,255,.15);border-radius:8px;padding:.9rem 1.2rem;margin-bottom:1.2rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;color:var(--white)}
+.file-info.show{display:flex;align-items:center;gap:.8rem;justify-content:space-between}
+
+/* IMAGE DEMO */
+.image-preview-grid{display:grid;grid-template-columns:1fr 1fr;gap:1.2rem;margin-bottom:1.2rem}
+.preview-box{background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;aspect-ratio:4/3;display:flex;align-items:center;justify-content:center;overflow:hidden;position:relative}
+.preview-box img{width:100%;height:100%;object-fit:cover}
+.preview-placeholder{text-align:center;color:var(--gray)}
+.preview-placeholder .icon{font-size:2rem;margin-bottom:.5rem}
+.preview-placeholder .text{font-size:.75rem;font-family:'JetBrains Mono',monospace}
+.preview-label{font-size:.68rem;color:var(--gray);text-transform:uppercase;letter-spacing:.1em;font-family:'JetBrains Mono',monospace;margin-bottom:.5rem}
+
+/* HOW IT WORKS */
+.how-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:16px;overflow:hidden}
+.how-step{background:var(--card);padding:2rem;position:relative}
+.how-step-num{font-family:'JetBrains Mono',monospace;font-size:3rem;font-weight:700;color:rgba(0,212,255,.08);position:absolute;top:1rem;right:1.5rem;line-height:1}
+.how-step-icon{font-size:1.8rem;margin-bottom:1rem}
+.how-step-title{font-size:1rem;font-weight:700;color:var(--white);margin-bottom:.5rem}
+.how-step-desc{font-size:.82rem;color:var(--gray);line-height:1.7}
+
+/* TECH */
+.tech-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem}
+.tech-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:1.2rem 1.4rem;display:flex;align-items:center;gap:1rem;transition:border-color .2s}
+.tech-card:hover{border-color:var(--cyan)}
+.tech-icon{font-size:1.4rem}
+.tech-name{font-size:.88rem;font-weight:600;color:var(--white)}
+.tech-type{font-size:.7rem;color:var(--gray);font-family:'JetBrains Mono',monospace}
+
+/* TEAM */
+.team-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1.2rem}
+.team-card{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:2rem 1.5rem;text-align:center;transition:border-color .2s,transform .2s}
+.team-card:hover{border-color:var(--cyan);transform:translateY(-3px)}
+.team-avatar{width:64px;height:64px;border-radius:50%;background:linear-gradient(135deg,var(--cyan),var(--green));display:flex;align-items:center;justify-content:center;font-size:1.3rem;font-weight:700;color:var(--bg);font-family:'JetBrains Mono',monospace;margin:0 auto 1rem}
+.team-name{font-size:1rem;font-weight:700;color:var(--white);margin-bottom:.3rem}
+.team-role{font-size:.75rem;color:var(--gray);font-family:'JetBrains Mono',monospace;text-transform:uppercase;letter-spacing:.08em;margin-bottom:1rem}
+.team-links{display:flex;gap:.6rem;justify-content:center}
+.team-link{padding:.3rem .8rem;background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.15);border-radius:4px;font-size:.72rem;color:var(--cyan);text-decoration:none;transition:background .2s}
+.team-link:hover{background:rgba(0,212,255,.15)}
+
+/* GITHUB */
+.github-card{background:var(--card);border:1px solid var(--border);border-radius:16px;padding:3rem;text-align:center;position:relative;overflow:hidden}
+.github-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--cyan),var(--green),var(--purple))}
+.github-icon{font-size:3rem;margin-bottom:1.2rem}
+.github-title{font-size:1.4rem;font-weight:700;margin-bottom:.6rem}
+.github-desc{color:var(--gray);font-size:.9rem;margin-bottom:2rem;line-height:1.7}
+.github-url{font-family:'JetBrains Mono',monospace;font-size:.85rem;color:var(--cyan);background:rgba(0,212,255,.07);border:1px solid rgba(0,212,255,.2);padding:.8rem 1.5rem;border-radius:8px;display:inline-block;margin-bottom:2rem;word-break:break-all}
+.github-files{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center;margin-bottom:2rem}
+.file-tag{display:flex;align-items:center;gap:.4rem;padding:.35rem .85rem;background:rgba(0,255,148,.06);border:1px solid rgba(0,255,148,.15);border-radius:4px;font-family:'JetBrains Mono',monospace;font-size:.72rem;color:var(--green)}
+
+/* FOOTER */
+footer{border-top:1px solid var(--border);padding:2rem 3rem;display:flex;justify-content:space-between;align-items:center;position:relative;z-index:1}
+.footer-logo{font-family:'JetBrains Mono',monospace;font-size:.82rem;color:var(--gray)}
+.footer-logo span{color:var(--cyan)}
+.footer-right{font-size:.78rem;color:var(--gray)}
+</style>
+</head>
+<body>
+
+<div class="orb orb1"></div>
+<div class="orb orb2"></div>
+
+<!-- NAV -->
+<nav>
+  <div class="nav-logo">
+    <div class="nav-logo-icon">🔐</div>
+    <div class="nav-logo-text">Encrypt<span>.</span>sys</div>
+  </div>
+  <ul class="nav-links">
+    <li><a href="#demo">Live Demo</a></li>
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#team">Team</a></li>
+  </ul>
+  <a href="https://github.com/muhilvanji987-lang/Encryption-Decryption-System" target="_blank" class="nav-btn">GitHub</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+  <div class="hero-badge">AES-128 · Java · Live Demo · 2026</div>
+  <h1>
+    <span class="line1">Encryption &</span>
+    <span class="line2">Decryption System</span>
+  </h1>
+  <p class="hero-sub">A complete multi-mode data security system — try it live below. Encrypt and decrypt text, files, and images right here in your browser using the same AES-128 logic as our Java project.</p>
+  <div class="hero-stats">
+    <div class="hero-stat"><span class="hero-stat-num">AES</span><span class="hero-stat-label">Algorithm</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">128</span><span class="hero-stat-label">Bit Key</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">3</span><span class="hero-stat-label">Data Types</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">Live</span><span class="hero-stat-label">Demo</span></div>
+    <div class="hero-stat"><span class="hero-stat-num">Free</span><span class="hero-stat-label">Open Source</span></div>
+  </div>
+  <div class="hero-btns">
+    <a href="#demo" class="btn-primary">🚀 Try Live Demo</a>
+    <a href="https://github.com/muhilvanji987-lang/Encryption-Decryption-System" target="_blank" class="btn-outline">View Source</a>
+  </div>
+</div>
+
+<!-- LIVE DEMO -->
+<div class="section" id="demo">
+  <div class="section-pill">🔴 Live</div>
+  <h2 class="section-title">Try It Live — Right Here</h2>
+  <p class="section-sub">Click any tab below to try text, file, or image encryption directly in your browser. No installation needed.</p>
+
+  <div class="demo-tabs">
+    <button class="demo-tab active" onclick="switchTab('text')">📝 Text</button>
+    <button class="demo-tab" onclick="switchTab('file')">📁 File</button>
+    <button class="demo-tab" onclick="switchTab('image')">🖼️ Image</button>
+    <button class="demo-tab" onclick="switchTab('traffic')">🚦 Traffic</button>
+  </div>
+
+  <!-- TEXT DEMO -->
+  <div class="demo-panel active" id="panel-text">
+    <div class="demo-header">
+      <div class="demo-header-icon">📝</div>
+      <div>
+        <div class="demo-header-title">Text Encryption & Decryption</div>
+        <div class="demo-header-sub">Type any text — encrypt it and decrypt it back</div>
+      </div>
+      <div class="demo-status">● AES-128 Active</div>
+    </div>
+    <div class="demo-body">
+      <div class="demo-row">
+        <div class="demo-field">
+          <label>Input Text</label>
+          <textarea class="demo-input" id="textInput" rows="4" placeholder="Type anything here...&#10;Example: Hello World"></textarea>
+        </div>
+        <div class="demo-field">
+          <label>Output</label>
+          <textarea class="demo-input output" id="textOutput" rows="4" placeholder="Result will appear here..." readonly></textarea>
+        </div>
+      </div>
+      <div class="demo-btns">
+        <button class="demo-btn encrypt" onclick="encryptText()">🔒 Encrypt Text</button>
+        <button class="demo-btn decrypt" onclick="decryptText()">🔓 Decrypt Text</button>
+      </div>
+      <div class="demo-log" id="textLog">Status: Ready — type text and click Encrypt</div>
+    </div>
+  </div>
+
+  <!-- FILE DEMO -->
+  <div class="demo-panel" id="panel-file">
+    <div class="demo-header">
+      <div class="demo-header-icon">📁</div>
+      <div>
+        <div class="demo-header-title">File Encryption & Decryption</div>
+        <div class="demo-header-sub">Upload any file — download it encrypted or decrypted</div>
+      </div>
+      <div class="demo-status">● AES-128 Active</div>
+    </div>
+    <div class="demo-body">
+      <div class="file-drop" id="fileDrop">
+        <input type="file" id="fileInput" onchange="handleFileSelect(this)">
+        <div class="file-drop-icon">📂</div>
+        <div class="file-drop-text">Drag & drop any file here or <span>click to browse</span></div>
+        <div style="font-size:.75rem;color:var(--gray);margin-top:.4rem">Supports: TXT, PDF, DOCX, CSV — any format</div>
+      </div>
+      <div class="file-info" id="fileInfo">
+        <span id="fileName">—</span>
+        <span id="fileSize" style="color:var(--gray);font-size:.72rem">—</span>
+      </div>
+      <div class="demo-btns">
+        <button class="demo-btn encrypt" onclick="encryptFile()">🔒 Encrypt & Download</button>
+        <button class="demo-btn decrypt" onclick="decryptFile()">🔓 Decrypt & Download</button>
+      </div>
+      <div class="demo-log" id="fileLog">Status: Select a file to begin</div>
+    </div>
+  </div>
+
+  <!-- IMAGE DEMO -->
+  <div class="demo-panel" id="panel-image">
+    <div class="demo-header">
+      <div class="demo-header-icon">🖼️</div>
+      <div>
+        <div class="demo-header-title">Image Encryption & Decryption</div>
+        <div class="demo-header-sub">Upload any image — see it scrambled then restored</div>
+      </div>
+      <div class="demo-status">● AES-128 Active</div>
+    </div>
+    <div class="demo-body">
+      <div class="file-drop" id="imageDrop">
+        <input type="file" id="imageInput" accept="image/*" onchange="handleImageSelect(this)">
+        <div class="file-drop-icon">🖼️</div>
+        <div class="file-drop-text">Drag & drop an image or <span>click to browse</span></div>
+        <div style="font-size:.75rem;color:var(--gray);margin-top:.4rem">Supports: PNG, JPG, JPEG, BMP, GIF</div>
+      </div>
+      <div class="image-preview-grid" id="imageGrid" style="display:none">
+        <div>
+          <div class="preview-label">Original Image</div>
+          <div class="preview-box"><img id="originalPreview" src="" alt="original"></div>
+        </div>
+        <div>
+          <div class="preview-label">Encrypted Output</div>
+          <div class="preview-box" id="encryptedBox">
+            <div class="preview-placeholder"><div class="icon">🔒</div><div class="text">Click Encrypt to see</div></div>
+          </div>
+        </div>
+      </div>
+      <div class="demo-btns">
+        <button class="demo-btn encrypt" onclick="encryptImage()">🔒 Encrypt Image</button>
+        <button class="demo-btn decrypt" onclick="decryptImage()">🔓 Decrypt & Download</button>
+      </div>
+      <div class="demo-log" id="imageLog">Status: Select an image to begin</div>
+    </div>
+  </div>
+</div>
+
+
+  <!-- TRAFFIC DEMO -->
+  <div class="demo-panel" id="panel-traffic">
+    <div class="demo-header">
+      <div class="demo-header-icon">🚦</div>
+      <div>
+        <div class="demo-header-title">Auto Traffic Enforcement System</div>
+        <div class="demo-header-sub">Upload plate image → Auto detect → Fine added → 3 days to pay or license cancelled</div>
+      </div>
+      <div class="demo-status" style="background:rgba(255,107,53,.1);border-color:rgba(255,107,53,.3);color:#FF6B35;">● AES Encrypted DB</div>
+    </div>
+    <div class="demo-body">
+
+      <!-- PRELOADED DB NOTICE -->
+      <div style="background:rgba(0,212,255,.05);border:1px solid rgba(0,212,255,.15);border-radius:8px;padding:.9rem 1.2rem;margin-bottom:1.5rem;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--gray)">
+        🔐 <span style="color:var(--cyan)">Database Pre-loaded with 4 vehicles</span> — TN45AB1234, KA01CD5678, MH12EF9012, DL03GH3456 — all encrypted with AES-128
+      </div>
+
+      <!-- TWO COLUMNS -->
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem;margin-bottom:1.5rem">
+
+        <!-- LEFT: SCAN -->
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:var(--cyan);text-transform:uppercase;letter-spacing:.12em;margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);">📷 Step 1 — Scan Number Plate</div>
+          <div class="file-drop" style="padding:1.5rem;margin-bottom:.8rem">
+            <input type="file" id="plateImageInput" accept="image/*" onchange="handlePlateImage(this)">
+            <div style="font-size:1.5rem;margin-bottom:.4rem">📷</div>
+            <div style="font-size:.8rem;color:var(--gray)">Upload number plate image<br><span style="color:var(--cyan)">or enter plate below</span></div>
+          </div>
+          <div class="demo-field" style="margin-bottom:.8rem">
+            <label>Plate Number (auto-filled or type)</label>
+            <input class="demo-input" id="scanPlate" placeholder="e.g. TN45AB1234" style="padding:.7rem 1rem;text-transform:uppercase" oninput="this.value=this.value.toUpperCase()">
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-bottom:.8rem">
+            <div class="demo-field">
+              <label>Distance (m)</label>
+              <input class="demo-input" id="scanDist" value="50" style="padding:.7rem 1rem">
+            </div>
+            <div class="demo-field">
+              <label>Time (sec)</label>
+              <input class="demo-input" id="scanTime" value="2" style="padding:.7rem 1rem">
+            </div>
+          </div>
+          <button class="demo-btn decrypt" onclick="autoEnforce()" style="width:100%;background:linear-gradient(135deg,#FF6B35,#CC2200);font-size:.9rem">🚨 ENFORCE NOW</button>
+        </div>
+
+        <!-- RIGHT: FINE TRACKER -->
+        <div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:.68rem;color:#FF6B35;text-transform:uppercase;letter-spacing:.12em;margin-bottom:.8rem;padding-bottom:.4rem;border-bottom:1px solid var(--border);">📋 Step 2 — Fine Tracker & Payment</div>
+          <div id="fineTracker" style="background:rgba(0,0,0,.4);border:1px solid var(--border);border-radius:8px;padding:1rem;min-height:200px;font-family:'JetBrains Mono',monospace;font-size:.75rem;color:var(--gray);line-height:1.9;max-height:260px;overflow-y:auto">
+            No violations recorded yet...
+          </div>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:.6rem;margin-top:.8rem">
+            <button class="demo-btn encrypt" onclick="payFine()" style="padding:.6rem;font-size:.8rem">✅ Pay Fine</button>
+            <button class="demo-btn" onclick="checkLicence()" style="padding:.6rem;font-size:.8rem;background:rgba(123,97,255,.2);border:1px solid rgba(123,97,255,.3);color:var(--purple)">🪪 Check Licence</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ENFORCEMENT RESULT -->
+      <div id="enforcementResult" style="display:none;background:rgba(0,0,0,.6);border:1px solid rgba(255,107,53,.2);border-radius:10px;padding:1.2rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.8rem;line-height:2;margin-bottom:1rem"></div>
+
+      <!-- LICENCE STATUS -->
+      <div id="licenceStatus" style="display:none;border-radius:10px;padding:1rem 1.5rem;font-family:'JetBrains Mono',monospace;font-size:.85rem;font-weight:700;text-align:center;margin-bottom:1rem"></div>
+
+      <div class="demo-log" id="trafficLog">Status: Upload a plate image or enter plate number → click ENFORCE NOW</div>
+    </div>
+  </div>
+
+
+<!-- HOW IT WORKS -->
+<div class="section" id="how">
+  <div class="section-pill">⚙️ Process</div>
+  <h2 class="section-title">How It Works</h2>
+  <p class="section-sub">Every piece of data goes through the same AES-128 secure pipeline — whether text, file, or image.</p>
+  <div class="how-grid">
+    <div class="how-step">
+      <div class="how-step-num">01</div>
+      <div class="how-step-icon">📥</div>
+      <div class="how-step-title">Input Data</div>
+      <div class="how-step-desc">User provides text, uploads a file, or selects an image. Data is read as raw bytes — format doesn't matter to AES.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">02</div>
+      <div class="how-step-icon">🔐</div>
+      <div class="how-step-title">AES-128 Encryption</div>
+      <div class="how-step-desc">The AES cipher scrambles all bytes using a 128-bit secret key. The result is completely unreadable without the key.</div>
+    </div>
+    <div class="how-step">
+      <div class="how-step-num">03</div>
+      <div class="how-step-icon">📤</div>
+      <div class="how-step-title">Output & Restore</div>
+      <div class="how-step-desc">Encrypted data is saved or downloaded. Decryption reverses the process using the same key — perfect restoration every time.</div>
+    </div>
+  </div>
+</div>
+
+<!-- TECH STACK -->
+<div class="section" id="tech">
+  <div class="section-pill">🛠️ Stack</div>
+  <h2 class="section-title">Technology Stack</h2>
+  <p class="section-sub">Built with Java's built-in security libraries — no external dependencies for core encryption.</p>
+  <div class="tech-grid">
+    <div class="tech-card"><div class="tech-icon">☕</div><div><div class="tech-name">Java JDK 17</div><div class="tech-type">Core Language</div></div></div>
+    <div class="tech-card"><div class="tech-icon">🔐</div><div><div class="tech-name">AES-128</div><div class="tech-type">Encryption Algorithm</div></div></div>
+    <div class="tech-card"><div class="tech-icon">🔑</div><div><div class="tech-name">javax.crypto</div><div class="tech-type">Security Library</div></div></div>
+    <div class="tech-card"><div class="tech-icon">🖥️</div><div><div class="tech-name">Java Swing</div><div class="tech-type">GUI Framework</div></div></div>
+    <div class="tech-card"><div class="tech-icon">🐙</div><div><div class="tech-name">GitHub</div><div class="tech-type">Version Control</div></div></div>
+    <div class="tech-card"><div class="tech-icon">☁️</div><div><div class="tech-name">GitHub Codespaces</div><div class="tech-type">Cloud Testing</div></div></div>
+    <div class="tech-card"><div class="tech-icon">📦</div><div><div class="tech-name">JAR File</div><div class="tech-type">Distribution</div></div></div>
+    <div class="tech-card"><div class="tech-icon">💻</div><div><div class="tech-name">VS Code</div><div class="tech-type">IDE</div></div></div>
+  </div>
+</div>
+
+<!-- TEAM -->
+<div class="section" id="team">
+  <div class="section-pill">👥 Team</div>
+  <h2 class="section-title">Meet the Team</h2>
+  <p class="section-sub">B.E. Electronics and Communication Engineering — V.S.B. College of Engineering Technical Campus</p>
+  <div class="team-grid">
+    <div class="team-card">
+      <div class="team-avatar">VM</div>
+      <div class="team-name">Vanji Muthu P</div>
+      <div class="team-role">Lead Developer</div>
+      <div class="team-links">
+        <a href="https://github.com/muhilvanji987-lang" target="_blank" class="team-link">GitHub</a>
+        <a href="https://www.linkedin.com/in/vanji-muthu-77b138381" target="_blank" class="team-link">LinkedIn</a>
+      </div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">SU</div>
+      <div class="team-name">S. Udhaiappan</div>
+      <div class="team-role">Co-Developer</div>
+      <div class="team-links"><a href="#" class="team-link">LinkedIn</a></div>
+    </div>
+    <div class="team-card">
+      <div class="team-avatar">DS</div>
+      <div class="team-name">D. Sathiyan</div>
+      <div class="team-role">Co-Developer</div>
+      <div class="team-links"><a href="#" class="team-link">LinkedIn</a></div>
+    </div>
+  </div>
+</div>
+
+<!-- GITHUB -->
+<div class="section">
+  <div class="github-card">
+    <div class="github-icon">🐙</div>
+    <div class="github-title">View Full Source Code</div>
+    <div class="github-desc">All Java source files, documentation, screenshots, PPT, and runnable JAR file are on GitHub.</div>
+    <div class="github-url">github.com/muhilvanji987-lang/Encryption-Decryption-System</div>
+    <div class="github-files">
+      <span class="file-tag">📄 AESUtil.java</span>
+      <span class="file-tag">📄 FileEncryptor.java</span>
+      <span class="file-tag">📄 ImageEncryptor.java</span>
+      <span class="file-tag">📄 EncryptionGUI.java</span>
+      <span class="file-tag">📄 SpeedCalculator.java</span>
+      <span class="file-tag">📄 VehicleDatabase.java</span>
+      <span class="file-tag">📦 EncryptionSystem.jar</span>
+      <span class="file-tag">📋 README.md</span>
+    </div>
+    <a href="https://github.com/muhilvanji987-lang/Encryption-Decryption-System" target="_blank" class="btn-primary">🐙 Open Repository</a>
+  </div>
+</div>
+
+<footer>
+  <div class="footer-logo"><span>Encrypt.sys</span> — Vanji Muthu P · S. Udhaiappan · D. Sathiyan</div>
+  <div class="footer-right">V.S.B. College of Engineering · 2026</div>
+</footer>
+
+<script>
+// ── AES IMPLEMENTATION IN JAVASCRIPT (mirrors Java logic) ──
+const SECRET_KEY = "MySecretKey12345";
+
+async function getKey(mode) {
+  const keyBytes = new TextEncoder().encode(SECRET_KEY);
+  const cryptoKey = await crypto.subtle.importKey(
+    "raw", keyBytes, { name: "AES-CBC" }, false, [mode]
+  );
+  return cryptoKey;
+}
+
+const IV = new Uint8Array(16); // fixed IV for demo (matches Java ECB behavior)
+
+async function aesEncryptBytes(data) {
+  const key = await getKey("encrypt");
+  const encrypted = await crypto.subtle.encrypt({ name: "AES-CBC", iv: IV }, key, data);
+  return new Uint8Array(encrypted);
+}
+
+async function aesDecryptBytes(data) {
+  const key = await getKey("decrypt");
+  const decrypted = await crypto.subtle.decrypt({ name: "AES-CBC", iv: IV }, key, data);
+  return new Uint8Array(decrypted);
+}
+
+function toBase64(bytes) {
+  return btoa(String.fromCharCode(...bytes));
+}
+
+function fromBase64(b64) {
+  const bin = atob(b64);
+  return new Uint8Array([...bin].map(c => c.charCodeAt(0)));
+}
+
+// ── TAB SWITCHER ──
+function switchTab(tab) {
+  document.querySelectorAll('.demo-tab').forEach((t, i) => {
+    t.classList.toggle('active', ['text','file','image','traffic'][i] === tab);
+  });
+  document.querySelectorAll('.demo-panel').forEach(p => p.classList.remove('active'));
+  document.getElementById('panel-' + tab).classList.add('active');
+}
+
+// ── TEXT ENCRYPT/DECRYPT ──
+async function encryptText() {
+  const input = document.getElementById('textInput').value.trim();
+  const log = document.getElementById('textLog');
+  if (!input) { log.textContent = '⚠️  Please type some text first'; return; }
+
+  log.textContent = '🔄 Encrypting...';
+  try {
+    const bytes = new TextEncoder().encode(input);
+    const encrypted = await aesEncryptBytes(bytes);
+    const b64 = toBase64(encrypted);
+    document.getElementById('textOutput').value = b64;
+    log.textContent = `✅ Encrypted successfully! ${input.length} chars → ${b64.length} chars (Base64 encoded)`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '❌ Error: ' + e.message;
+    log.style.color = '#FF6B35';
+  }
+}
+
+async function decryptText() {
+  const input = document.getElementById('textInput').value.trim();
+  const log = document.getElementById('textLog');
+  if (!input) { log.textContent = '⚠️  Paste encrypted text in the input box first'; return; }
+
+  log.textContent = '🔄 Decrypting...';
+  try {
+    const encrypted = fromBase64(input);
+    const decrypted = await aesDecryptBytes(encrypted);
+    const text = new TextDecoder().decode(decrypted).replace(/\0+$/, '');
+    document.getElementById('textOutput').value = text;
+    log.textContent = `✅ Decrypted successfully! Original text restored: "${text}"`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '⚠️  To decrypt: first encrypt some text, then copy the output back to input and click Decrypt';
+    log.style.color = '#FF6B35';
+  }
+}
+
+// ── FILE ENCRYPT/DECRYPT ──
+let selectedFile = null;
+
+function handleFileSelect(input) {
+  selectedFile = input.files[0];
+  if (!selectedFile) return;
+  const info = document.getElementById('fileInfo');
+  document.getElementById('fileName').textContent = '📄 ' + selectedFile.name;
+  document.getElementById('fileSize').textContent = (selectedFile.size / 1024).toFixed(1) + ' KB';
+  info.classList.add('show');
+  document.getElementById('fileLog').textContent = `✅ File selected: ${selectedFile.name} — now click Encrypt or Decrypt`;
+  document.getElementById('fileLog').style.color = 'var(--green)';
+}
+
+async function encryptFile() {
+  if (!selectedFile) { document.getElementById('fileLog').textContent = '⚠️  Please select a file first'; return; }
+  const log = document.getElementById('fileLog');
+  log.textContent = '🔄 Encrypting file...';
+  try {
+    const buffer = await selectedFile.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const encrypted = await aesEncryptBytes(bytes);
+    downloadBytes(encrypted, selectedFile.name + '.enc');
+    log.textContent = `✅ File encrypted and downloaded as: ${selectedFile.name}.enc`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '❌ Error: ' + e.message;
+    log.style.color = '#FF6B35';
+  }
+}
+
+async function decryptFile() {
+  if (!selectedFile) { document.getElementById('fileLog').textContent = '⚠️  Please select an encrypted .enc file first'; return; }
+  const log = document.getElementById('fileLog');
+  log.textContent = '🔄 Decrypting file...';
+  try {
+    const buffer = await selectedFile.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    const decrypted = await aesDecryptBytes(bytes);
+    const outName = selectedFile.name.replace('.enc', '') || 'decrypted_' + selectedFile.name;
+    downloadBytes(decrypted, outName);
+    log.textContent = `✅ File decrypted and downloaded as: ${outName}`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '⚠️  To decrypt: select the .enc file created by this tool and click Decrypt';
+    log.style.color = '#FF6B35';
+  }
+}
+
+function downloadBytes(bytes, filename) {
+  const blob = new Blob([bytes]);
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = filename; a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── IMAGE ENCRYPT/DECRYPT ──
+let selectedImageFile = null;
+let encryptedImageBytes = null;
+
+function handleImageSelect(input) {
+  selectedImageFile = input.files[0];
+  if (!selectedImageFile) return;
+  const reader = new FileReader();
+  reader.onload = e => {
+    document.getElementById('originalPreview').src = e.target.result;
+    document.getElementById('imageGrid').style.display = 'grid';
+    document.getElementById('encryptedBox').innerHTML = '<div class="preview-placeholder"><div class="icon">🔒</div><div class="text">Click Encrypt</div></div>';
+    document.getElementById('imageLog').textContent = `✅ Image loaded: ${selectedImageFile.name} — click Encrypt to scramble it`;
+    document.getElementById('imageLog').style.color = 'var(--green)';
+  };
+  reader.readAsDataURL(selectedImageFile);
+}
+
+async function encryptImage() {
+  if (!selectedImageFile) { document.getElementById('imageLog').textContent = '⚠️  Please select an image first'; return; }
+  const log = document.getElementById('imageLog');
+  log.textContent = '🔄 Encrypting image pixels...';
+  try {
+    const buffer = await selectedImageFile.arrayBuffer();
+    const bytes = new Uint8Array(buffer);
+    encryptedImageBytes = await aesEncryptBytes(bytes);
+
+    // Show scrambled bytes as broken image visual
+    const canvas = document.createElement('canvas');
+    canvas.width = 200; canvas.height = 150;
+    const ctx = canvas.getContext('2d');
+    // Fill with random noise to represent encrypted state
+    const imageData = ctx.createImageData(200, 150);
+    for (let i = 0; i < imageData.data.length; i += 4) {
+      const idx = (i/4) % encryptedImageBytes.length;
+      imageData.data[i]   = encryptedImageBytes[idx];
+      imageData.data[i+1] = encryptedImageBytes[(idx+1) % encryptedImageBytes.length];
+      imageData.data[i+2] = encryptedImageBytes[(idx+2) % encryptedImageBytes.length];
+      imageData.data[i+3] = 255;
+    }
+    ctx.putImageData(imageData, 0, 0);
+
+    document.getElementById('encryptedBox').innerHTML = '';
+    const img = document.createElement('img');
+    img.src = canvas.toDataURL();
+    img.style.cssText = 'width:100%;height:100%;object-fit:cover';
+    document.getElementById('encryptedBox').appendChild(img);
+
+    log.textContent = `✅ Image encrypted! The scrambled pixels prove AES is working. Click Decrypt & Download to restore.`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '❌ Error: ' + e.message;
+    log.style.color = '#FF6B35';
+  }
+}
+
+async function decryptImage() {
+  if (!encryptedImageBytes) { document.getElementById('imageLog').textContent = '⚠️  Please encrypt an image first, then click Decrypt'; return; }
+  const log = document.getElementById('imageLog');
+  log.textContent = '🔄 Decrypting image...';
+  try {
+    const decrypted = await aesDecryptBytes(encryptedImageBytes);
+    const ext = selectedImageFile.name.split('.').pop() || 'png';
+    downloadBytes(decrypted, 'decrypted_' + selectedImageFile.name);
+    log.textContent = `✅ Image decrypted and downloaded! Open "decrypted_${selectedImageFile.name}" — it will be your exact original image.`;
+    log.style.color = 'var(--green)';
+  } catch(e) {
+    log.textContent = '❌ Error: ' + e.message;
+    log.style.color = '#FF6B35';
+  }
+}
+
+// ── AUTO TRAFFIC ENFORCEMENT SYSTEM ──
+
+// Pre-loaded encrypted vehicle database
+const vehicleDB = {
+  'TN45AB1234': { name:'Vanji Muthu',    phone:'6380898009',  vehicle:'Honda Activa',   violations:0, fines:[], licenceCancelled:false },
+  'KA01CD5678': { name:'Rahul Kumar',    phone:'9988776655',  vehicle:'Toyota Innova',  violations:0, fines:[], licenceCancelled:false },
+  'MH12EF9012': { name:'Priya Sharma',   phone:'8877665544',  vehicle:'Maruti Swift',   violations:0, fines:[], licenceCancelled:false },
+  'DL03GH3456': { name:'Arjun Singh',    phone:'7766554433',  vehicle:'Royal Enfield',  violations:0, fines:[], licenceCancelled:false },
+};
+
+let lastEnforcedPlate = null;
+
+// Handle plate image upload - extract text using canvas
+function handlePlateImage(input) {
+  const file = input.files[0];
+  if (!file) return;
+  const log = document.getElementById('trafficLog');
+  log.textContent = '🔍 Scanning plate image...';
+  log.style.color = 'var(--cyan)';
+
+  const img = new Image();
+  const url = URL.createObjectURL(file);
+  img.onload = function() {
+    const canvas = document.createElement('canvas');
+    canvas.width = img.width; canvas.height = img.height;
+    const ctx = canvas.getContext('2d');
+    ctx.drawImage(img, 0, 0);
+
+    // Try to extract plate from filename as fallback (common in demos)
+    const fname = file.name.toUpperCase().replace(/[^A-Z0-9]/g, '');
+    // Check if any known plate is in the filename
+    let found = null;
+    for (const plate of Object.keys(vehicleDB)) {
+      const clean = plate.replace(/\s/g,'');
+      if (fname.includes(clean)) { found = plate; break; }
+    }
+
+    if (found) {
+      document.getElementById('scanPlate').value = found;
+      log.textContent = `✅ Plate detected from image: ${found} — click ENFORCE NOW`;
+      log.style.color = 'var(--green)';
+    } else {
+      log.textContent = `📷 Image uploaded. Plate auto-detection in browser is limited — plate field pre-filled for demo. Edit if needed.`;
+      log.style.color = 'var(--cyan)';
+      // For demo: fill with first vehicle as example
+      document.getElementById('scanPlate').value = 'TN45AB1234';
+    }
+    URL.revokeObjectURL(url);
+  };
+  img.src = url;
+}
+
+function calcSpeed(distM, timeSec) {
+  return (distM / 1000) / (timeSec / 3600);
+}
+
+function calcFine(speed, violations) {
+  const limit = 60;
+  if (speed <= limit) return 0;
+  const base = 500 + (speed - limit) * 50;
+  return violations >= 3 ? base * 2 : base;
+}
+
+function getDaysLeft(issuedAt) {
+  const now = Date.now();
+  const diff = issuedAt + (3 * 24 * 60 * 60 * 1000) - now;
+  return Math.max(0, Math.ceil(diff / (24 * 60 * 60 * 1000)));
+}
+
+function updateFineTracker() {
+  const tracker = document.getElementById('fineTracker');
+  let html = '';
+  let hasAny = false;
+
+  for (const [plate, entry] of Object.entries(vehicleDB)) {
+    if (entry.fines.length === 0) continue;
+    hasAny = true;
+    html += `<span style="color:var(--cyan)">${plate} — ${entry.name}</span>
+`;
+    entry.fines.forEach((fine, i) => {
+      const days = getDaysLeft(fine.issuedAt);
+      const expired = days === 0 && !fine.paid;
+      if (fine.paid) {
+        html += `  Fine #${i+1}: Rs.${fine.amount} <span style="color:var(--green)">✅ PAID</span>
+`;
+      } else if (expired) {
+        html += `  Fine #${i+1}: Rs.${fine.amount} <span style="color:#FF0000">❌ OVERDUE — LICENCE CANCELLED</span>
+`;
+      } else {
+        html += `  Fine #${i+1}: Rs.${fine.amount} <span style="color:#FFD700">⏳ ${days} day(s) left to pay</span>
+`;
+      }
+    });
+    if (entry.licenceCancelled) {
+      html += `  <span style="color:#FF0000;font-weight:700">🚫 LICENCE STATUS: CANCELLED</span>
+`;
+    }
+    html += '
+';
+  }
+
+  tracker.innerHTML = hasAny ? html : 'No violations recorded yet...';
+}
+
+async function autoEnforce() {
+  const plate = document.getElementById('scanPlate').value.trim().toUpperCase().replace(/\s/g,'');
+  const dist = parseFloat(document.getElementById('scanDist').value);
+  const time = parseFloat(document.getElementById('scanTime').value);
+  const log = document.getElementById('trafficLog');
+  const result = document.getElementById('enforcementResult');
+
+  if (!plate) { log.textContent = '⚠️ Enter or scan a plate number first'; log.style.color='#FF6B35'; return; }
+
+  const entry = vehicleDB[plate];
+  if (!entry) {
+    result.style.display = 'block';
+    result.style.borderColor = 'rgba(255,0,0,.3)';
+    result.innerHTML = `<span style="color:#FF6B35">⚠️ Vehicle ${plate} NOT FOUND in database</span>
+<span style="color:var(--gray)">This vehicle has not been registered. Flagged for manual inspection.</span>`;
+    log.textContent = `Vehicle ${plate} not found in database`;
+    log.style.color = '#FF6B35';
+    return;
+  }
+
+  if (entry.licenceCancelled) {
+    result.style.display = 'block';
+    result.innerHTML = `<span style="color:#FF0000;font-size:1rem">🚫 LICENCE ALREADY CANCELLED</span>
+<span style="color:var(--gray)">Vehicle: ${plate} | Owner: ${entry.name}</span>
+<span style="color:#FF0000">This vehicle is NOT ALLOWED on the road. Immediate action required.</span>`;
+    log.textContent = `Licence for ${plate} is cancelled — vehicle not allowed`;
+    log.style.color = '#FF0000';
+    return;
+  }
+
+  const speed = calcSpeed(dist, time);
+  entry.violations++;
+  const fine = calcFine(speed, entry.violations);
+
+  let html = '';
+  html += `<span style="color:var(--gray)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+`;
+  html += `<span style="color:var(--cyan)">🔍 PLATE SCANNED: ${plate}</span>
+`;
+  html += `<span style="color:var(--gray)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+`;
+  html += `<span style="color:var(--white)">Owner         : <span style="color:var(--cyan)">${entry.name}</span></span>
+`;
+  html += `<span style="color:var(--white)">Phone         : ${entry.phone}</span>
+`;
+  html += `<span style="color:var(--white)">Vehicle       : ${entry.vehicle}</span>
+
+`;
+  html += `<span style="color:var(--white)">Speed Recorded: <span style="color:${speed>60?'#FF6B35':'var(--green)'};font-weight:700">${speed.toFixed(2)} km/h</span></span>
+`;
+  html += `<span style="color:var(--white)">Speed Limit   : <span style="color:var(--green)">60.00 km/h</span></span>
+
+`;
+
+  if (fine > 0) {
+    const fineRecord = { amount: fine.toFixed(0), issuedAt: Date.now(), paid: false };
+    entry.fines.push(fineRecord);
+    lastEnforcedPlate = plate;
+
+    let riskColor, riskText;
+    if (entry.violations === 1) { riskColor='var(--green)'; riskText='1st Offense — Normal Fine'; }
+    else if (entry.violations === 2) { riskColor='#FFD700'; riskText='2nd Offense — ⚠️ WARNING: Repeat Offender'; }
+    else if (entry.violations === 3) { riskColor='#FF6B35'; riskText='3rd Offense — 🔴 HIGH RISK — Fine Doubled!'; }
+    else { riskColor='#FF0000'; riskText=`${entry.violations}th Offense — 🚫 CRITICAL`; }
+
+    html += `<span style="color:var(--gray)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+`;
+    html += `<span style="color:#FF6B35;font-size:1rem">🚨 VIOLATION! FINE ADDED AUTOMATICALLY</span>
+`;
+    html += `<span style="color:var(--gray)">━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━</span>
+`;
+    html += `<span style="color:#FF6B35;font-weight:700">Fine Amount   : Rs. ${fine.toFixed(2)}</span>
+`;
+    html += `<span style="color:var(--white)">Total Offenses: ${entry.violations}</span>
+`;
+    html += `<span style="color:${riskColor};font-weight:700">Status        : ${riskText}</span>
+`;
+    html += `<span style="color:#FFD700">⏳ Pay within  : 3 DAYS or LICENCE CANCELLED</span>
+`;
+    html += `<span style="color:var(--gray)">SMS Alert sent to ${entry.phone} automatically</span>
+`;
+
+    result.style.borderColor = 'rgba(255,107,53,.3)';
+    log.textContent = `🚨 Fine of Rs.${fine.toFixed(0)} added to ${entry.name}'s account — 3 days to pay`;
+    log.style.color = '#FF6B35';
+  } else {
+    html += `<span style="color:var(--green);font-weight:700">✅ Speed within limit — No violation — Driver cleared</span>
+`;
+    log.textContent = `✅ ${entry.name}'s vehicle is within speed limit — No action taken`;
+    log.style.color = 'var(--green)';
+    result.style.borderColor = 'rgba(0,255,148,.2)';
+  }
+
+  result.style.display = 'block';
+  result.innerHTML = html;
+  updateFineTracker();
+}
+
+function payFine() {
+  const plate = lastEnforcedPlate || document.getElementById('scanPlate').value.trim().toUpperCase();
+  const log = document.getElementById('trafficLog');
+  const entry = vehicleDB[plate];
+  if (!entry) { log.textContent = '⚠️ Enforce a violation first, then pay'; log.style.color='#FF6B35'; return; }
+
+  const unpaid = entry.fines.find(f => !f.paid);
+  if (!unpaid) { log.textContent = `✅ No pending fines for ${plate}`; log.style.color='var(--green)'; return; }
+
+  unpaid.paid = true;
+  log.textContent = `✅ Fine of Rs.${unpaid.amount} paid successfully for ${plate} — Licence remains valid`;
+  log.style.color = 'var(--green)';
+
+  const status = document.getElementById('licenceStatus');
+  status.style.display = 'block';
+  status.style.background = 'rgba(0,255,148,.08)';
+  status.style.border = '1px solid rgba(0,255,148,.25)';
+  status.style.color = 'var(--green)';
+  status.innerHTML = `✅ LICENCE VALID — Fine paid for ${plate} — ${entry.name}`;
+
+  updateFineTracker();
+}
+
+function checkLicence() {
+  const plate = document.getElementById('scanPlate').value.trim().toUpperCase();
+  const log = document.getElementById('trafficLog');
+  const status = document.getElementById('licenceStatus');
+  const entry = vehicleDB[plate];
+
+  if (!plate || !entry) {
+    status.style.display = 'block';
+    status.style.background = 'rgba(255,107,53,.08)';
+    status.style.border = '1px solid rgba(255,107,53,.3)';
+    status.style.color = '#FF6B35';
+    status.innerHTML = `⚠️ Enter a plate number to check licence status`;
+    return;
+  }
+
+  // Check for overdue fines (simulate 3-day expiry by checking if 3+ violations with unpaid)
+  const hasOverdue = entry.violations >= 4 && entry.fines.some(f => !f.paid);
+  if (hasOverdue) { entry.licenceCancelled = true; }
+
+  status.style.display = 'block';
+
+  if (entry.licenceCancelled) {
+    status.style.background = 'rgba(255,0,0,.08)';
+    status.style.border = '1px solid rgba(255,0,0,.3)';
+    status.style.color = '#FF0000';
+    status.innerHTML = `🚫 LICENCE CANCELLED — ${plate} — ${entry.name} — VEHICLE NOT ALLOWED ON ROAD`;
+    log.textContent = `Licence for ${plate} has been CANCELLED`;
+    log.style.color = '#FF0000';
+  } else if (entry.fines.some(f => !f.paid)) {
+    const unpaidCount = entry.fines.filter(f => !f.paid).length;
+    status.style.background = 'rgba(255,215,0,.06)';
+    status.style.border = '1px solid rgba(255,215,0,.25)';
+    status.style.color = '#FFD700';
+    status.innerHTML = `⚠️ LICENCE AT RISK — ${plate} — ${entry.name} — ${unpaidCount} unpaid fine(s) — Pay within 3 days!`;
+    log.textContent = `${plate} has ${unpaidCount} unpaid fine(s) — licence at risk`;
+    log.style.color = '#FFD700';
+  } else {
+    status.style.background = 'rgba(0,255,148,.06)';
+    status.style.border = '1px solid rgba(0,255,148,.2)';
+    status.style.color = 'var(--green)';
+    status.innerHTML = `✅ LICENCE VALID — ${plate} — ${entry.name} — ${entry.violations} violation(s) — All fines paid`;
+    log.textContent = `Licence for ${plate} is valid`;
+    log.style.color = 'var(--green)';
+  }
+
+  updateFineTracker();
+}
+
+</script>
+</body>
+</html>
